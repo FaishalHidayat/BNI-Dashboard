@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ag_daily {
+  id            Int      @id @default(autoincrement())
+  report_type   String   @db.VarChar(10)
+  report_date   DateTime @db.Date
+  user_id       String   @db.VarChar(10)
+  user_name     String?  @db.VarChar(100)
+  card_count    Int?
+  freq          Int?
+  bunga_0       Decimal? @db.Decimal(15, 2)
+  bunga_regular Decimal? @db.Decimal(15, 2)
+  sales_volume  Decimal? @db.Decimal(15, 2)
+  agent         agent    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([report_type, report_date, user_id], map: "uq_ag_daily")
+  @@index([report_date], map: "idx_ag_daily_date")
+  @@index([report_type], map: "idx_ag_daily_type")
+  @@index([user_id], map: "idx_ag_daily_user_id")
+}
+
+model agent {
+  user_id                                                String              @id @db.VarChar(10)
+  user_name                                              String              @db.VarChar(100)
+  role                                                   String              @db.VarChar(20)
+  level                                                  String?             @db.VarChar(20)
+  ag_daily                                               ag_daily[]
+  agent_spv_mapping                                      agent_spv_mapping[]
+  agent_spv_mapping_agent_spv_mapping_spv_user_idToagent agent_spv_mapping[] @relation("agent_spv_mapping_spv_user_idToagent")
+  cd_daily                                               cd_daily[]
+  spv_daily                                              spv_daily[]
+}
+
+model agent_spv_mapping {
+  id                                         Int      @id @default(autoincrement())
+  user_id4                                   String   @db.VarChar(10)
+  spv_name                                   String   @db.VarChar(100)
+  level                                      String?  @db.VarChar(20)
+  period_month                               DateTime @db.Date
+  spv_user_id                                String   @db.VarChar(10)
+  agent                                      agent    @relation(fields: [user_id4], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  agent_agent_spv_mapping_spv_user_idToagent agent    @relation("agent_spv_mapping_spv_user_idToagent", fields: [spv_user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_spv_user")
+
+  @@unique([user_id4, period_month])
+  @@index([period_month], map: "idx_agent_spv_mapping_period")
+}
+
+model cd_daily {
+  id           Int                      @id @default(autoincrement())
+  report_date3 DateTime                 @db.Date
+  user_id3     String                   @db.VarChar(10)
+  user_name3   String?                  @db.VarChar(100)
+  nsts         Int?
+  new_count    Int?
+  fup          Int?
+  dec_count    Int?
+  ncn          Int?
+  npu          Int?
+  ruf          Int?
+  atmp         Int?
+  talktime     Unsupported("interval")?
+  duration     Unsupported("interval")?
+  aprv         Int?
+  rdpc         Int?
+  clos         Int?
+  sol          Int?
+  ar           Decimal?                 @db.Decimal(8, 2)
+  er           Decimal?                 @db.Decimal(8, 2)
+  tr_pct       Decimal?                 @db.Decimal(8, 2)
+  scr_pct      Decimal?                 @db.Decimal(8, 2)
+  s_c          Decimal?                 @db.Decimal(15, 2)
+  dch          Decimal?                 @db.Decimal(10, 2)
+  prd          String?                  @db.VarChar(50)
+  agent        agent                    @relation(fields: [user_id3], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([report_date3, user_id3], map: "uq_cd_daily")
+  @@index([report_date3], map: "idx_cd_daily_date")
+  @@index([user_id3], map: "idx_cd_daily_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spv_daily {
+  id             Int      @id @default(autoincrement())
+  report_type2   String   @db.VarChar(10)
+  report_date2   DateTime @db.Date
+  user_id2       String   @db.VarChar(10)
+  user_name2     String?  @db.VarChar(100)
+  card_count2    Int?
+  freq2          Int?
+  bunga_02       Decimal? @db.Decimal(15, 2)
+  bunga_regular2 Decimal? @db.Decimal(15, 2)
+  sales_volume2  Decimal? @db.Decimal(15, 2)
+  agent          agent    @relation(fields: [user_id2], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([report_type2, report_date2, user_id2], map: "uq_spv_daily")
+  @@index([report_date2], map: "idx_spv_daily_date")
+  @@index([report_type2], map: "idx_spv_daily_type")
+  @@index([user_id2], map: "idx_spv_daily_user_id")
+}
+
+model asn_target {
+  report_date      DateTime @id @db.Date
+  sales_volume_asn Decimal  @default(0) @db.Decimal(15, 2)
+}
+
+model itkxasn_config {
+  id              Int @id @default(autoincrement())
+  agent_count_itk Int @default(79)
+  agent_count_asn Int @default(97)
+}
+
+model level_target {
+  level               String   @id @db.VarChar(20)
+  target_amount       Decimal  @db.Decimal(15, 2)
+  agent_target_amount Decimal? @db.Decimal(15, 2)
+}
+
+model asn_agent_count {
+  period_month DateTime @id @db.Date
+  agent_count  Int
+}
+
+model itk_agent_count {
+  period_month DateTime @id @db.Date
+  agent_count  Int
+}
